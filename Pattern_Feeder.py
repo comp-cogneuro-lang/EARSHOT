@@ -3,6 +3,7 @@ import tensorflow as tf
 import _pickle as pickle
 from threading import Thread
 from collections import deque
+import random
 from random import shuffle
 import time, librosa
 from Audio import *
@@ -20,7 +21,8 @@ class Pattern_Feeder:
 
         with open (pattern_File, "rb") as f:
             load_Dict = pickle.load(f)
-
+        random_value = random.random()
+        print("Random value: ", random_value)
         self.pronunciation_Dict = load_Dict["Pronunciation_Dict"]
         self.spectrogram_Size = load_Dict["Spectrogram_Size"]
         self.semantic_Size = load_Dict["Semantic_Size"]
@@ -49,7 +51,7 @@ class Pattern_Feeder:
     def Load_Metadata(self, metadata_File):
         with open (metadata_File, "rb") as f:
             metadata_Dict = pickle.load(f)
-
+        print("Metadata loaded from file.")
         self.training_Pattern_Dict = {key:self.pattern_Dict[key] for key in metadata_Dict["Trained_Pattern_List"]}
         self.excluded_Pattern_Dict = {key:self.pattern_Dict[key] for key in metadata_Dict["Excluded_Pattern_List"]}
 
@@ -81,10 +83,12 @@ class Pattern_Feeder:
             self.training_Pattern_Dict = self.pattern_Dict
             return
 
-        talker_List = list(set([talker for word, talker in self.pattern_Dict.keys()]))
+        talker_List = sorted(list(set([talker for word, talker in self.pattern_Dict.keys()])))
         shuffle(talker_List)
-        word_List = list(self.word_Index_Dict.keys())
+        word_List = sorted(list(self.word_Index_Dict.keys()))
         shuffle(word_List)
+        print("A random number:", random.random())
+
         exclude_Size = len(word_List) // len(talker_List)
 
         if self.partial_Exclusion_in_Training.lower() == 'p':

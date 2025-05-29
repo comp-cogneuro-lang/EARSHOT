@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import random
 import _pickle as pickle
 from tensorflow.contrib.seq2seq import BasicDecoder, TrainingHelper, InferenceHelper, dynamic_decode
 from tensorflow.contrib.rnn import LSTMCell, GRUCell, BasicRNNCell, LSTMStateTuple
@@ -12,9 +13,16 @@ from Pattern_Feeder import Pattern_Feeder
 from SCRNCell import SCRNCell, SCRNStateTuple
 from Customized_Functions import Correlation2D, Batch_Correlation2D, Batch_Cosine_Similarity2D, MDS
 #import ctypes #If you run this script in the linux or mac, remove this line.
+import fwr13y.d9m.tensorflow as tf_determinism
 
-
-
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.set_random_seed(seed)
+    
+    # https://github.com/NVIDIA/framework-reproducibility/blob/master/doc/d9m/tensorflow_status.md#TF_CUDNN_DETERMINISTIC
+    tf_determinism.enable_determinism()  # Apply NVIDIA determinism patch
+    
 class Model:
     #Initialize the model
     def __init__(
@@ -153,7 +161,7 @@ class Model:
                 )
 
             loss = tf.reduce_mean(loss_Calculation)
-            loss_Display = tf.reduce_mean(loss_Calculation, axis=[0,2])    #This is for the display. There is no meaning.
+            loss_Display = tf.reduce_mean(loss_Calculation)    #This is for the display. There is no meaning.
             
             global_Step = tf.Variable(0, name='global_Step', trainable = False)
 
@@ -293,6 +301,17 @@ class Model:
             sys.exit()
         print("Checkpoint '", checkpoint, "' is loaded.")
 
+    def TEST(self):
+        # Get the list of trainable variables
+        trainable_vars = tf.trainable_variables()
+
+        # Evaluate the variables to get their values
+        weights_values = self.tf_Session.run(trainable_vars)
+
+        # Print the weights
+        for var, val in zip(trainable_vars, weights_values):
+            print(f"Variable: {var.name}, Value: {val}")
+        
     #Training
     def Train(self, test_Timing, checkpoint_Timing = 1000):
         if not os.path.exists(self.extract_Dir + "/Checkpoint"):
@@ -320,7 +339,7 @@ class Model:
                 "Global_Step:", global_Step, "\t",
                 "Epoch:", current_Epoch, "\t",
                 "Learning_Rate:", learning_Rate, "\n",
-                "Training_Loss:", " ".join(["%0.5f" % x for x in training_Loss])
+                "Training_Loss:", np.mean(training_Loss)#" ".join(["%0.5f" % x for x in training_Loss])
                 )
 
         #Final test and save
@@ -377,8 +396,8 @@ class Model:
             metadata_Dict["Target_Array"] = self.pattern_Feeder.target_Array   #[Pattern, 300]
             metadata_Dict["Cycle_Array"] = self.pattern_Feeder.test_Cycle_Pattern  #[Pattern]
 
-            metadata_Dict["Trained_Pattern_List"] = list(self.pattern_Feeder.training_Pattern_Dict.keys()) #'Trained' category patterns
-            metadata_Dict["Excluded_Pattern_List"] = list(self.pattern_Feeder.excluded_Pattern_Dict.keys())    #'Excluded words' and 'excluded talkers' patterns
+            metadata_Dict["Trained_Pattern_List"] = sorted(list(self.pattern_Feeder.training_Pattern_Dict.keys()), key=lambda x: x[0]+"-"+x[1]) #'Trained' category patterns
+            metadata_Dict["Excluded_Pattern_List"] = sorted(list(self.pattern_Feeder.excluded_Pattern_Dict.keys()), key=lambda x: x[0]+"-"+x[1])    #'Excluded words' and 'excluded talkers' patterns
             metadata_Dict["Excluded_Talker"] = self.pattern_Feeder.excluded_Talker    #'Excluded words' and 'excluded talkers' patterns
             
             with open(self.extract_Dir + "/Result/Metadata.pickle", "wb") as f:
@@ -425,11 +444,13 @@ if __name__ == "__main__":
     metadata_File = argument_Dict["metadata_file"]
     simulation_Index = argument_Dict["index"]
 
+    set_seed(42)
+    
     #Pattern file is including spectrogram, semantic, cycle, pattern index, pronunciation dict, and phonetic competator information.
     #This method improves pattern generating speed, but it cannot be applied to the big lexicon project.
     file_Name = "Pattern_Dict.IM_Spectrogram.OM_SRV.AN_10.Size_10000.WL_10.pickle"
 
-    extract_Dir_List = ["./Results/IDX_{}/HM_{}".format(simulation_Index, hidden_Type)]
+    extract_Dir_List = ["/scratch/jsm04005/fie24002/paper2020/Results/IDX_{}/HM_{}".format(simulation_Index, hidden_Type)]
     extract_Dir_List.append("H_{}".format(hidden_Unit))
     extract_Dir_List.append("EM_{}".format(exclusion_Mode))
     if not exclusion_Talker is None:
@@ -454,6 +475,7 @@ if __name__ == "__main__":
         hidden_Reset = False,
         extract_Dir=extract_Dir
         )
-    new_Model.Restore(force_Overwrite=False)
+    # new_Model.TEST()
+    new_Model.Restore(force_Overwrite=True)
     new_Model.Train(test_Timing=test_Timing, checkpoint_Timing=test_Timing)
     #new_Model.Test(start_Epoch)
