@@ -1,5 +1,8 @@
 # EARS User Guide
 
+## About this branch
+
+This branch enables GPU-deterministic functionality. An report named Earshot_Reproduction_Report.pdf is available in the top-level of this repo.
 
 ## EARSHOT paper 
 
