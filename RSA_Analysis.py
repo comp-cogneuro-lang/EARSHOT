@@ -11,14 +11,15 @@ from random import shuffle
 from statistics import mean
 from scipy import stats
 import pickle, argparse
-
+import tqdm
 
 #For sorting
 sort_List_Dict = {
     'PSI': ['p','t','k','f','θ','s','ʃ','b','d','g','v','ð','z','m','n','ŋ','l','r','w','u','j','i','ɪ','eɪ','ə','ʊ','ɔ','a','aɪ','oʊ','aʊ','æ','ɛ'],
     'FSI': ['obstruent', 'labial', 'coronal', 'dorsal', 'plosive', 'fricative', 'nasal', 'high', 'front', 'low', 'back','voiced', 'syllabic','sonorant']
     }
-
+print("len of PSI:", len(sort_List_Dict["PSI"]))
+print("len of FSI:", len(sort_List_Dict["FSI"]))
 class RSA_Analyzer:
     def __init__(self, data_Path, export_Path, data_Type):
         if not data_Type.upper() in ['PSI', 'FSI']:
@@ -42,17 +43,17 @@ class RSA_Analyzer:
                 raw_Data = line.decode("utf-8").strip().split('\t')
                 data_Dict[raw_Data[0]] = np.array([float(x) for x in raw_Data[1:]])
 
-        self.data_Array = np.vstack([data_Dict[x] for x in sort_List_Dict[self.data_Type]])
+        self.data_Array = np.vstack([data_Dict[x] for x in sort_List_Dict[self.data_Type]]) # [phoneme, hidden size]
 
         #Phoneme feature when data type is PSI
         if self.data_Type == 'PSI':
             phoneme_Feature_Dict = {}
-            with open('Phoneme_Feature.txt', 'rb') as f:
+            with open('Phoneme_Feature.Paper.re.txt', 'rb') as f:
                 for line in f.readlines()[1:]:
                     raw_Data = line.decode("utf-8").strip().split('\t')
-                    phoneme_Feature_Dict[raw_Data[1]] = np.array([float(x) for x in raw_Data[3:]])
+                    phoneme_Feature_Dict[raw_Data[1]] = np.array([float(x) for x in raw_Data[2:]]) # i think it's supposed to be 2
 
-            self.phoneme_Feature_Array = np.vstack([phoneme_Feature_Dict[x] for x in sort_List_Dict[self.data_Type]])
+            self.phoneme_Feature_Array = np.vstack([phoneme_Feature_Dict[x] for x in sort_List_Dict[self.data_Type]]) # []
 
     def RSA_Generate(self, permutation_Nums= 1000000):
         os.makedirs(self.export_Path, exist_ok= True)
@@ -67,7 +68,7 @@ class RSA_Analyzer:
         permutation_Cor_List_Dict['EARShot', 'Mesgarani']= {
             metric_Type: [
                 self.RSA_Calc(self.data_Array, self.mestarani_Distance_Dict[metric_Type], metric_Type, True)[1]
-                for _ in range(permutation_Nums)
+                for _ in tqdm.tqdm(range(permutation_Nums))
                 ]
             for metric_Type in self.mertic_Type_List
             }
@@ -84,7 +85,7 @@ class RSA_Analyzer:
             permutation_Cor_List_Dict['EARShot', 'Phoneme_Feature']= {
                 metric_Type: [
                     self.RSA_Calc(self.data_Array, phoneme_Feature_Distance_Dict[metric_Type], metric_Type, True)[1]
-                    for _ in range(permutation_Nums)
+                    for _ in tqdm.tqdm(range(permutation_Nums))
                     ]
                 for metric_Type in self.mertic_Type_List
                 }
@@ -183,10 +184,13 @@ if __name__ == '__main__':
     selected_Criterion = float(argument_Dict["criterion"])
     permutation_Nums = int(argument_Dict['permutation_nums'] or 1000000)
 
-    for data_Type in ['PSI', 'FSI']:
+    for data_Type in ['FSI', 'PSI']:
         work_Dir = os.path.join(argument_Dict["extract_dir"], 'Hidden_Analysis', 'E.{}'.format(selected_Epoch), 'Map.{}'.format(data_Type)).replace('\\', '/')
         data_Path = os.path.join(work_Dir, 'TXT', 'W_(5,15).Normal.{}.C_{:.2f}.D_Positive.T_All.txt'.format(data_Type, selected_Criterion)).replace('\\', '/')
         export_Path = os.path.join(work_Dir, 'RSA')
+
+        if os.path.exists(data_Path):
+            print(data_Path, " found.")
 
         new_Analyzer = RSA_Analyzer(
             data_Path = data_Path,

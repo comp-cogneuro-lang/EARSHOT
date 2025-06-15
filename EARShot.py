@@ -430,6 +430,8 @@ if __name__ == "__main__":
     argParser.set_defaults(metadata_file = None)
     argParser.add_argument("-idx", "--index", required=False)  #This is just for identifier. This parameter does not affect the model's performance
     argParser.set_defaults(idx = None)
+    argParser.add_argument("-seed", "--seed", required=False)  #This is just for identifier. This parameter does not affect the model's performance
+    argParser.set_defaults(idx = 42)
     argument_Dict = vars(argParser.parse_args())
     
     hidden_Type = argument_Dict["hidden_type"].upper()
@@ -444,7 +446,7 @@ if __name__ == "__main__":
     metadata_File = argument_Dict["metadata_file"]
     simulation_Index = argument_Dict["index"]
 
-    set_seed(42)
+    set_seed(int(argument_Dict["seed"]))
     
     #Pattern file is including spectrogram, semantic, cycle, pattern index, pronunciation dict, and phonetic competator information.
     #This method improves pattern generating speed, but it cannot be applied to the big lexicon project.

@@ -12,7 +12,7 @@ talker_List = ["Agnes", "Alex", "Bruce", "Fred", "Junior", "Kathy", "Princess", 
 talker_List = [x.upper() for x in talker_List]
 
 #Feature load
-with open("Phoneme_Feature.txt", "r", encoding='UTF8') as f:
+with open("Phoneme_Feature.Paper.re.txt", "r", encoding='UTF8') as f:
     readLines = f.readlines()
 
 feature_List = readLines[0].strip().split("\t")[3:]
@@ -163,7 +163,7 @@ def Activation_Dict_Generate(
             fetches = activation_Tensor,
             feed_dict = model.pattern_Feeder.Get_Test_Pattern_from_Voice(voice_File_Path_List=voice_File_Path_List[batch_Index:batch_Index+batch_Size])
             )    #[Mini_Batch, Hidden, Time]
-        activation = activation[:, :, time_Range[0]:time_Range[1]]
+        activation = activation[:, :, time_Range[0]:time_Range[1]] # 50ms ~ 150ms
 
         activation_List.append(activation)
     
@@ -338,7 +338,7 @@ def Export_Flow(flow_Type, flow_Dict, save_Path, prefix="", only_All = True):
             for row_Label, row in zip(row_Label_List, unit_Flow):
                 extract_List.append("\t".join([row_Label] + [str(x) for x in row]))
         
-            with open(os.path.join(save_Path, "TXT", "{}{}.U_{}.T_{}.txt".format(prefix, flow_Type.upper(), unit_Index, talker)), "w", encoding='UTF8') as f:
+            with open(os.path.join(save_Path, "TXT", "{}{}.U_{}.T_{}.txt".format(prefix, flow_Type, unit_Index, talker)), "w", encoding='UTF8') as f:
                 f.write("\n".join(extract_List))
 
 

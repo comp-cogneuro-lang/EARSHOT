@@ -40,6 +40,11 @@ class Pattern_Feeder:
         else:
             self.Load_Metadata(metadata_File)
 
+        train_spks = sorted(set([talker for word, talker in self.training_Pattern_Dict.keys()]))
+        test_spks = sorted(set([talker for word, talker in self.excluded_Pattern_Dict.keys()]))
+        print("Train SPK:", train_spks)
+        print("Excluded SPK:", test_spks)
+
         if pattern_Mode == "Normal":
             pattern_Generate_Thread = Thread(target=self.Pattern_Generate_Normal)
         elif  pattern_Mode == "Truncated":
