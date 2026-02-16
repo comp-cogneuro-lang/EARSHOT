@@ -10,7 +10,7 @@ Magnuson, J.S., You, H., Luthra, S., Li, M., Nam, H., Escabí, M., Brown, K., Al
 
 ## Before starting
 
-* Download input file `Pattern_Dict.IM_Spectrogram.OM_SRV.AN_10.Size_10000.WL_10.pickle` [here](https://www.dropbox.com/scl/fi/4lxlarc3tq34wmhuqu5vc/Pattern_Dict.IM_Spectrogram.OM_SRV.AN_10.Size_10000.WL_10.pickle?rlkey=eknkxcuo6259koxvdrmj0ttxu&e=1&st=6pj18kvf&dl=0)
+* Download input file `Pattern_Dict.IM_Spectrogram.OM_SRV.AN_10.Size_10000.WL_10.pickle` [here](https://zenodo.org/records/18661507?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjBhZjFlMDJmLWU5NDgtNDljYi04OWNlLTljOTk0YzcwNGZmMSIsImRhdGEiOnt9LCJyYW5kb20iOiIyZDJmMmExZGY5ZTg2OTNiNzFmZTk1MTg0YWYxMmNjYiJ9.QXYa1mNAJNcUHkiJzXNPzmAF9iA2k1zR6Q9X2ErGsNflOXCMjqpx1g_PJNbot_W7vZfnyGh-GeWfx6NVrENKrQ)
 
 * Download diphone wav files for hidden analysis [here](https://drive.google.com/file/d/1poWuCQ1_09jBSaIZJbj5KvBLl4HejdH3/view)
 
